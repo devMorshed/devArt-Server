@@ -29,6 +29,17 @@ const client = new MongoClient(uri, {
 async function run() {
 	const usersCollection = client.db("devArt").collection("users");
 
+	app.post("/user/:email", async (req, res) => {
+		const user = req.body;
+		const query = { email: req.params.email };
+		const existinguser = await usersCollection.findOne(query);
+		if (existinguser) {
+			return res.send("User Alredy Existed");
+		}
+		const result = await usersCollection.insertOne(user);
+		res.send(result);
+	});
+
 	// Send a ping to confirm a successful connection
 	await client.db("admin").command({ ping: 1 });
 	console.log(
