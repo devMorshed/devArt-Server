@@ -60,7 +60,15 @@ async function run() {
 	app.get("/instructors", async (req, res) => {
 		const result = await instructorsCollection.find().toArray();
 		res.send(result);
-	});
+  });
+
+  app.get("/popularinstructors", async (req, res) => {
+		const sort = { enrolled_students: -1 };
+		const result = (
+			await instructorsCollection.find().sort(sort).toArray()
+		).slice(0, 6);
+		res.send(result);
+  });
 
 	// Send a ping to confirm a successful connection
 	await client.db("admin").command({ ping: 1 });
