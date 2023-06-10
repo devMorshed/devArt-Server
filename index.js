@@ -64,6 +64,26 @@ async function run() {
 		res.send(token);
 	});
 
+	// checking admin role
+	app.get("/isstudent/:email", verifyJWT, async (req, res) => {
+		const email = req.params.email;
+		if (req.decoded.email !== email) {
+			res.send({ student: false });
+		}
+		const query = { email: email };
+		const user = await usersCollection.findOne(query);
+		const result = { student: user?.role === "student" };
+		res.send(result);
+	});
+
+	app.get("/userrole/:email", async (req, res) => {
+		const email = req.params.email;
+		const query = { email: email };
+		const user = await usersCollection.findOne(query);
+		const result = { role: user?.role };
+		res.send(result);
+	});
+
 	app.post("/user/:email", async (req, res) => {
 		const user = req.body;
 		const query = { email: req.params.email };
