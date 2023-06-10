@@ -116,11 +116,22 @@ async function run() {
 		if (email !== req.decoded.email) {
 			res.send({ error: true, message: "forbidden access" });
 		}
-		const query = { email, status: "seleccted" };
+		const query = { email, status: "selected" };
 		const result = await cartCollection.find(query).toArray();
 		res.send(result);
 	});
 
+	app.get("/enrolled", verifyJWT, async (req, res) => {
+		const email = req.query.email;
+		if (email !== req.decoded.email) {
+			res.send({ error: true, message: "forbidden access" });
+		}
+		const query = { email, status: "paid" };
+		const result = await cartCollection.find(query).toArray();
+		res.send(result);
+	});
+
+  
 	app.get("/cart/:id", verifyJWT, async (req, res) => {
 		const id = req.params.id;
 		const query = { _id: new ObjectId(id) };
@@ -134,7 +145,6 @@ async function run() {
 		const result = await cartCollection.deleteOne(query);
 		res.send(result);
 	});
-
 
 	app.post("/create-payment-intent", verifyJWT, async (req, res) => {
 		const { price } = req.body;
