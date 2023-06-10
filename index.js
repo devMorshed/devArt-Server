@@ -131,7 +131,6 @@ async function run() {
 		res.send(result);
 	});
 
-  
 	app.get("/cart/:id", verifyJWT, async (req, res) => {
 		const id = req.params.id;
 		const query = { _id: new ObjectId(id) };
@@ -165,16 +164,29 @@ async function run() {
 		const payment = req.body;
 		const insertResult = await paymentCollection.insertOne(payment);
 
-		const filter = { _id: new ObjectId(payment.classID) };
-		const updatedDoc = {
+		const cartfilter = { _id: new ObjectId(payment.cartID) };
+		const seatfilter = { _id: new ObjectId(payment.classID) };
+		const updatedCart = {
 			$set: {
 				status: `paid`,
 			},
 		};
-		const updateResult = await cartCollection.updateOne(filter, updatedDoc);
 
-		console.log(updateResult);
-		res.send({ insertResult, updateResult });
+		const updatedSeat = {
+			$inc: {
+				available_seats: -1,
+			},
+		};
+
+		const cartResult = await cartCollection.updateOne(cartfilter, updatedCart);
+		const seatResult = await classesCollection.updateOne(
+			seatfilter,
+			updatedSeat
+		);
+
+		console.log("cart", cartResult, "seat", seatResult);
+
+		res.send({ insertResult, cartResult, seatResult });
 	});
 
 	// payment
