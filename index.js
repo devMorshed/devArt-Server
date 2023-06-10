@@ -60,23 +60,11 @@ async function run() {
 		const token = jwt.sign(user, process.env.TOKEN_SECRET, {
 			expiresIn: "1h",
 		});
-
 		res.send(token);
 	});
 
-	// checking admin role
-	app.get("/isstudent/:email", verifyJWT, async (req, res) => {
-		const email = req.params.email;
-		if (req.decoded.email !== email) {
-			res.send({ student: false });
-		}
-		const query = { email: email };
-		const user = await usersCollection.findOne(query);
-		const result = { student: user?.role === "student" };
-		res.send(result);
-	});
-
-	app.get("/userrole/:email", async (req, res) => {
+	// geting user role
+	app.get("/userrole/:email", verifyJWT, async (req, res) => {
 		const email = req.params.email;
 		const query = { email: email };
 		const user = await usersCollection.findOne(query);
@@ -124,7 +112,6 @@ async function run() {
 	});
 
 	// Cart related API's
-
 	app.post("/cart/:email", async (req, res) => {
 		const cartItem = req.body;
 		const result = await cartCollection.insertOne(cartItem);
@@ -227,8 +214,6 @@ async function run() {
 		const result = await paymentCollection.find(query).sort(sort).toArray();
 		res.send(result);
 	});
-
-	// payment
 
 	// Send a ping to confirm a successful connection
 	await client.db("admin").command({ ping: 1 });
