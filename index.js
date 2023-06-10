@@ -175,10 +175,14 @@ async function run() {
 		const updatedSeat = {
 			$inc: {
 				available_seats: -1,
+				enrolled_students: +1,
 			},
 		};
 
-		const cartResult = await cartCollection.updateOne(cartfilter, updatedCart);
+		const cartResult = await cartCollection.updateOne(
+			cartfilter,
+			updatedCart
+		);
 		const seatResult = await classesCollection.updateOne(
 			seatfilter,
 			updatedSeat
@@ -187,6 +191,21 @@ async function run() {
 		console.log("cart", cartResult, "seat", seatResult);
 
 		res.send({ insertResult, cartResult, seatResult });
+	});
+
+	app.get("/paymenthistory", verifyJWT, async (req, res) => {
+		const email = req.query.email;
+		if (email !== req.decoded.email) {
+			res.status(403).send({
+				error: true,
+				message: "Unauthorized Access",
+			});
+		}
+		const query = { email: email };
+		const sort = { paymentDate: -1 };
+
+		const result = await paymentCollection.find(query).sort(sort).toArray();
+		res.send(result);
 	});
 
 	// payment
