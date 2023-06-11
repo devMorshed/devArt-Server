@@ -72,6 +72,49 @@ async function run() {
 		res.send(result);
 	});
 
+	const verifyAdmin = async (req, res, next) => {
+		const email = req.decoded.email;
+		const query = { email: email };
+		const user = await usersCollection.findOne(query);
+		if (user.role !== "admin") {
+			res.status(403).send({
+				error: true,
+				message: "Forbidden Admin Access",
+			});
+		}
+		if (user.role === "admin") {
+			next();
+		}
+	};
+	const verifyStudent = async (req, res, next) => {
+		const email = req.decoded.email;
+		const query = { email: email };
+		const user = await usersCollection.findOne(query);
+		if (user.role !== "student") {
+			res.status(403).send({
+				error: true,
+				message: "Forbidden Student Access",
+			});
+		}
+		if (user.role === "student") {
+			next();
+		}
+	};
+	const verifyInstructor = async (req, res, next) => {
+		const email = req.decoded.email;
+		const query = { email: email };
+		const user = await usersCollection.findOne(query);
+		if (user.role !== "instructor") {
+			res.status(403).send({
+				error: true,
+				message: "Forbidden Instructor Access",
+			});
+		}
+		if (user.role === "instructor") {
+			next();
+		}
+	};
+
 	app.post("/user/:email", async (req, res) => {
 		const user = req.body;
 		const query = { email: req.params.email };
@@ -88,6 +131,37 @@ async function run() {
 		const result = await classesCollection.find().toArray();
 		res.send(result);
 	});
+
+	app.get(
+		"/myclass/:email",
+		verifyJWT,
+		verifyInstructor,
+		async (req, res) => {
+			const email = req.params.email;
+			if (email !== req.decoded.email) {
+				res.status(402).send({ error: true, message: "Forbidden" });
+			}
+			const query = { instructor_mail: email };
+			const result = await classesCollection.find(query).toArray();
+			res.send(result);
+		}
+	);
+
+	app.post(
+		"/classes/:email",
+		verifyJWT,
+		verifyInstructor,
+		async (req, res) => {
+			const email = req.params.email;
+			console.log("object");
+			if (email !== req.decoded.email) {
+				res.status(402).send({ error: true, message: "Forbidden" });
+			}
+			const classDoc = req.body;
+			const result = await classesCollection.insertOne(classDoc);
+			res.send(result);
+		}
+	);
 
 	app.get("/popularclasses", async (req, res) => {
 		const sort = { enrolled_students: -1 };
