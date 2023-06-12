@@ -158,8 +158,54 @@ async function run() {
 
 	// Get Classes
 	app.get("/classes", async (req, res) => {
+		const query = { status: "approved" };
+		const result = await classesCollection.find(query).toArray();
+		res.send(result);
+	});
+
+	app.get("/allclass", verifyJWT, verifyAdmin, async (req, res) => {
 		const result = await classesCollection.find().toArray();
 		res.send(result);
+	});
+
+	app.put("/approveclass/:id", verifyJWT, verifyAdmin, async (req, res) => {
+		const id = req.params.id;
+		const query = { _id: new ObjectId(id) };
+		const updatedDOc = {
+			$set: {
+				status: `approved`,
+			},
+		};
+		const result = await classesCollection.updateOne(query, updatedDOc);
+		res.send(result);
+	});
+
+	app.put("/denyclass/:id", verifyJWT, verifyAdmin, async (req, res) => {
+		const id = req.params.id;
+		const query = { _id: new ObjectId(id) };
+		const updatedDOc = {
+			$set: {
+				status: `denied`,
+			},
+		};
+		const result = await classesCollection.updateOne(query, updatedDOc);
+		res.send(result);
+  });
+  
+	app.put("/feedback/:id", verifyJWT, verifyAdmin, async (req, res) => {
+		const id = req.params.id;
+    const query = { _id: new ObjectId(id) };
+    const updatedFeedback = req.body;
+
+    console.log(updatedFeedback);
+
+		const updatedDOc = {
+			$set: {
+				status: `denied`,
+			},
+		};
+		// const result = await classesCollection.updateOne(query, updatedDOc);
+		// res.send(result);
 	});
 
 	app.get(
