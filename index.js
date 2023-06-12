@@ -251,8 +251,10 @@ async function run() {
 
 	// Get Instructors
 	app.get("/instructors", async (req, res) => {
-		const query = { role: "instructor" };
-		const result = await usersCollection.find(query).toArray();
+    const query = { role: "instructor" };
+		const sort = { enrolled_studentss: -1 };
+    
+		const result = await usersCollection.find(query).sort(sort).toArray();
 		res.send(result);
 	});
 
