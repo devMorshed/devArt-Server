@@ -284,15 +284,14 @@ async function run() {
 		res.send(result);
 	});
 
-	app.get("/enrolled", verifyJWT, async (req, res) => {
+	app.get("/enrolled", async (req, res) => {
 		const email = req.query.email;
-		if (email !== req.decoded.email) {
-			res.send({ error: true, message: "forbidden access" });
-		}
-		const query = { email, status: "paid" };
+
+		const query = { user_email : email, status: "paid" };
 		const result = await cartCollection.find(query).toArray();
 		res.send(result);
-	});
+  });
+  
 
 	app.get("/cart/:id", verifyJWT, async (req, res) => {
 		const id = req.params.id;
