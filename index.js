@@ -190,22 +190,22 @@ async function run() {
 		};
 		const result = await classesCollection.updateOne(query, updatedDOc);
 		res.send(result);
-  });
-  
+	});
+
 	app.put("/feedback/:id", verifyJWT, verifyAdmin, async (req, res) => {
 		const id = req.params.id;
-    const query = { _id: new ObjectId(id) };
-    const updatedFeedback = req.body;
-
-    console.log(updatedFeedback);
+		console.log("Hitted");
+		const query = { _id: new ObjectId(id) };
 
 		const updatedDOc = {
 			$set: {
-				status: `denied`,
+				feedback: req.body.feedback,
 			},
-		};
-		// const result = await classesCollection.updateOne(query, updatedDOc);
-		// res.send(result);
+    };
+    
+    console.log(updatedDOc);
+		const result = await classesCollection.updateOne(query, updatedDOc);
+		res.send(result);
 	});
 
 	app.get(
