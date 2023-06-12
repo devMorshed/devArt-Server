@@ -156,7 +156,6 @@ async function run() {
 		res.send(result);
 	});
 
-  
 	// Get Classes
 	app.get("/classes", async (req, res) => {
 		const query = { status: "approved" };
@@ -241,9 +240,11 @@ async function run() {
 	);
 
 	app.get("/popularclasses", async (req, res) => {
+		const query = { status: "approved" };
+
 		const sort = { enrolled_studentss: -1 };
 		const result = (
-			await classesCollection.find().sort(sort).toArray()
+			await classesCollection.find(query).sort(sort).toArray()
 		).slice(0, 6);
 		res.send(result);
 	});
