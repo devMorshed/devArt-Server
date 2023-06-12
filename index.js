@@ -126,6 +126,36 @@ async function run() {
 		res.send(result);
 	});
 
+	app.get("/users", verifyJWT, verifyAdmin, async (req, res) => {
+		const result = await usersCollection.find().toArray();
+		res.send(result);
+	});
+
+	app.put("/makeadmin/:id", verifyJWT, verifyAdmin, async (req, res) => {
+		const id = req.params.id;
+		const query = { _id: new ObjectId(id) };
+		const updatedDOc = {
+			$set: {
+				role: `admin`,
+			},
+		};
+		const result = await usersCollection.updateOne(query, updatedDOc);
+		res.send(result);
+	});
+
+	app.put("/makeinstructor/:id", verifyJWT, verifyAdmin, async (req, res) => {
+		const id = req.params.id;
+		const query = { _id: new ObjectId(id) };
+		const updatedDOc = {
+			$set: {
+				role: `instructor`,
+				enrolled_students: 0,
+			},
+		};
+		const result = await usersCollection.updateOne(query, updatedDOc);
+		res.send(result);
+	});
+
 	// Get Classes
 	app.get("/classes", async (req, res) => {
 		const result = await classesCollection.find().toArray();
@@ -173,14 +203,16 @@ async function run() {
 
 	// Get Instructors
 	app.get("/instructors", async (req, res) => {
-		const result = await instructorsCollection.find().toArray();
+		const query = { role: "instructor" };
+		const result = await usersCollection.find(query).toArray();
 		res.send(result);
 	});
 
 	app.get("/popularinstructors", async (req, res) => {
+		const query = { role: "instructor" };
 		const sort = { enrolled_students: -1 };
 		const result = (
-			await instructorsCollection.find().sort(sort).toArray()
+			await usersCollection.find(query).sort(sort).toArray()
 		).slice(0, 6);
 		res.send(result);
 	});
@@ -193,12 +225,14 @@ async function run() {
 	});
 
 	app.get("/cart", verifyJWT, async (req, res) => {
+		console.log("hitted");
 		const email = req.query.email;
 		if (email !== req.decoded.email) {
 			res.send({ error: true, message: "forbidden access" });
 		}
-		const query = { email, status: "selected" };
+		const query = { user_email: email, status: "selected" };
 		const result = await cartCollection.find(query).toArray();
+		console.log(result);
 		res.send(result);
 	});
 
@@ -247,6 +281,10 @@ async function run() {
 
 		const cartfilter = { _id: new ObjectId(payment.cartID) };
 		const seatfilter = { _id: new ObjectId(payment.classID) };
+		const instructorFilter = { email: payment.instructor_mail };
+
+		console.log(instructorFilter);
+
 		const updatedCart = {
 			$set: {
 				status: `paid`,
@@ -260,6 +298,16 @@ async function run() {
 			},
 		};
 
+		const updateInstructor = {
+			$inc: {
+				enrolled_students: +1,
+			},
+		};
+
+		const insOption = {
+			upsert: true,
+		};
+
 		const cartResult = await cartCollection.updateOne(
 			cartfilter,
 			updatedCart
@@ -269,9 +317,15 @@ async function run() {
 			updatedSeat
 		);
 
+		const InsResult = await usersCollection.updateOne(
+			instructorFilter,
+			updateInstructor,
+			insOption
+		);
+
 		console.log("cart", cartResult, "seat", seatResult);
 
-		res.send({ insertResult, cartResult, seatResult });
+		res.send({ insertResult, cartResult, seatResult, InsResult });
 	});
 
 	app.get("/paymenthistory", verifyJWT, async (req, res) => {
