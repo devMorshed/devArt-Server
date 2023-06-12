@@ -149,13 +149,14 @@ async function run() {
 		const updatedDOc = {
 			$set: {
 				role: `instructor`,
-				enrolled_students: 0,
+				enrolled_studentss: 0,
 			},
 		};
 		const result = await usersCollection.updateOne(query, updatedDOc);
 		res.send(result);
 	});
 
+  
 	// Get Classes
 	app.get("/classes", async (req, res) => {
 		const query = { status: "approved" };
@@ -201,9 +202,9 @@ async function run() {
 			$set: {
 				feedback: req.body.feedback,
 			},
-    };
-    
-    console.log(updatedDOc);
+		};
+
+		console.log(updatedDOc);
 		const result = await classesCollection.updateOne(query, updatedDOc);
 		res.send(result);
 	});
@@ -240,7 +241,7 @@ async function run() {
 	);
 
 	app.get("/popularclasses", async (req, res) => {
-		const sort = { enrolled_students: -1 };
+		const sort = { enrolled_studentss: -1 };
 		const result = (
 			await classesCollection.find().sort(sort).toArray()
 		).slice(0, 6);
@@ -256,7 +257,7 @@ async function run() {
 
 	app.get("/popularinstructors", async (req, res) => {
 		const query = { role: "instructor" };
-		const sort = { enrolled_students: -1 };
+		const sort = { enrolled_studentss: -1 };
 		const result = (
 			await usersCollection.find(query).sort(sort).toArray()
 		).slice(0, 6);
@@ -340,13 +341,13 @@ async function run() {
 		const updatedSeat = {
 			$inc: {
 				available_seats: -1,
-				enrolled_students: +1,
+				enrolled_studentss: +1,
 			},
 		};
 
 		const updateInstructor = {
 			$inc: {
-				enrolled_students: +1,
+				enrolled_studentss: +1,
 			},
 		};
 
